@@ -7,7 +7,7 @@ export default async function handler(req, res) {
     }
 
     try {
-        const id = nanoid(10); // 10 chars should be sufficient and short enough
+        const id = nanoid(10);
         const createdAt = new Date();
         const expiresAt = new Date(createdAt.getTime() + 24 * 60 * 60 * 1000);
 

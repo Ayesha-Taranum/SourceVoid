@@ -36,7 +36,7 @@ export default function Home() {
   return (
     <div className="container">
       <Head>
-        <title>CodeFlux</title>
+        <title>SourceVoid</title>
         <meta name="description" content="Room-based code sharing" />
         <meta name="viewport" content="width=device-width, initial-scale=1" />
       </Head>
@@ -44,11 +44,11 @@ export default function Home() {
       <h1 className="title" style={{ minHeight: '3rem' }}>
         <TypeAnimation
           sequence={[
-            '_code_flux',
+            '_source_void',
             1000,
             '',
             500,
-            '_code_flux',
+            '_source_void',
             1000,
           ]}
           wrapper="span"

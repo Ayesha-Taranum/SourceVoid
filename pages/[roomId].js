@@ -7,10 +7,10 @@ export default function Room() {
     const { roomId } = router.query;
 
     const [content, setContent] = useState('');
-    const [status, setStatus] = useState('loading'); // loading, ready, expired, error, saving
+    const [status, setStatus] = useState('loading');
     const [lineNumbers, setLineNumbers] = useState([1]);
 
-    // Fetch room data
+
     useEffect(() => {
         if (!roomId) return;
 
@@ -50,18 +50,13 @@ export default function Room() {
         saveDebounced(newVal);
     };
 
-    // Debounced save
-    const saveDebounced = useCallback((text) => {
-        // Clear existing timer if any (basic implementation)
-        if (window.saveTimer) clearTimeout(window.saveTimer);
 
-        // Set status to unsaved/typing?
-        // Actually we can just save quietly.
+    const saveDebounced = useCallback((text) => {
 
         window.saveTimer = setTimeout(() => {
             saveContent(text);
         }, 1000);
-    }, [roomId]); // Dependency on roomId
+    }, [roomId]);
 
     const saveContent = async (text) => {
         if (!roomId) return;

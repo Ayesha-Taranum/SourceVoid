@@ -1,4 +1,4 @@
-# 📝 SourceVoid
+# 🌌 SourceVoid
 
 A lightweight, room-based code sharing application (Pastebin) built with **Next.js** and **MySQL**. It features temporary rooms that automatically expire after 24 hours, perfect for quick, ad-hoc code sharing.
 
@@ -66,6 +66,5 @@ Open [http://localhost:3000](http://localhost:3000) with your browser to see the
 
 ## 🤝 Contributing
 Feel free to open issues or submit pull requests if you have ideas for improvements!
-
 
 

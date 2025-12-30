@@ -22,6 +22,18 @@ body {
   overflow-x: hidden;
 }
 
+/* Chrome, Safari, Edge, Opera */
+input::-webkit-outer-spin-button,
+input::-webkit-inner-spin-button {
+  -webkit-appearance: none;
+  margin: 0;
+}
+
+/* Firefox */
+input[type=number] {
+  -moz-appearance: textfield;
+}
+
 a {
   color: inherit;
   text-decoration: none;
@@ -163,4 +175,86 @@ input:focus {
   border: 1px solid var(--error-color);
   padding: 2rem;
   text-align: center;
+}
+
+/* Creation Panel */
+.creation-panel {
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+  width: 100%;
+  max-width: 400px;
+}
+
+.options-row {
+  display: flex;
+  gap: 0.5rem;
+}
+
+.options-row select {
+  flex: 1;
+  background: #000;
+  color: var(--text-color);
+  border: 1px solid var(--accent-color);
+  padding: 10px;
+  font-size: 1rem;
+  font-family: inherit;
+  outline: none;
+  -webkit-appearance: none;
+  -moz-appearance: none;
+  appearance: none;
+  cursor: pointer;
+}
+
+.small-input {
+  width: 80px;
+}
+
+.password-input {
+  width: 100%;
+  background: #000;
+}
+
+.create-btn {
+  width: 100%;
+  margin-top: 0.5rem;
+}
+
+.divider {
+  color: #555;
+  font-size: 0.8rem;
+}
+
+/* Password Gate */
+.password-gate {
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+  align-items: center;
+  background: #111;
+  padding: 2rem;
+  border: 1px solid var(--accent-color);
+  border-radius: 8px;
+}
+
+/* Editor Overrides */
+.editor-container {
+  flex: 1;
+  position: relative;
+  background: #0e0e0e;
+  /* Ensure editor code has contrast */
+}
+
+/* Syntax Dropdown */
+.lang-select {
+  background: transparent;
+  color: var(--text-color);
+  border: 1px solid var(--accent-color);
+  padding: 5px;
+  margin-right: 10px;
+  cursor: pointer;
+}
+
+.lang-select option {
+  background: #000;
 }

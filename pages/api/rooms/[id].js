@@ -1,4 +1,5 @@
 import pool from '../../../lib/db';
+import bcrypt from 'bcryptjs';
 
 export default async function handler(req, res) {
     const { id } = req.query;
@@ -10,41 +11,89 @@ export default async function handler(req, res) {
     try {
         if (req.method === 'GET') {
             const [rows] = await pool.query('SELECT * FROM rooms WHERE id = ?', [id]);
-
             const now = new Date();
 
+            let room = null;
+
             if (rows.length > 0) {
-                const room = rows[0];
-                if (new Date(room.expires_at) < now) {
-                    return res.status(410).json({ message: 'Room has expired' });
+                room = rows[0];
+
+                // 1. Time Expiration Check
+                if (room.expires_at && new Date(room.expires_at) < now) {
+                    return res.status(410).json({ message: 'Room has expired (Time limit reached)' });
                 }
-                return res.status(200).json(room);
+
+                // 2. View Expiration Check
+                if (room.max_views > 0 && room.current_views >= room.max_views) {
+                    return res.status(410).json({ message: 'Room has expired (View limit reached)' });
+                }
+
+                // 3. Password Check
+                if (room.password) {
+                    const providedPass = req.headers['x-room-password'];
+                    if (!providedPass) {
+                        return res.status(401).json({ protected: true, id: id });
+                    }
+                    const isMatch = await bcrypt.compare(providedPass, room.password);
+                    if (!isMatch) {
+                        return res.status(403).json({ message: 'Invalid password', protected: true });
+                    }
+                }
+
+                // 4. Increment View Count
+                await pool.query('UPDATE rooms SET current_views = current_views + 1 WHERE id = ?', [id]);
+
+                // Return data
+                return res.status(200).json({
+                    id: room.id,
+                    content: room.content,
+                    created_at: room.created_at,
+                    expires_at: room.expires_at,
+                    language: room.language || 'plaintext',
+                    current_views: room.current_views + 1,
+                    max_views: room.max_views
+                });
+
             } else {
-                // Room does not exist, create it (Auto-create behavior)
+                // Room does not exist, Auto-create (Default settings)
                 const expiresAt = new Date(now.getTime() + 24 * 60 * 60 * 1000);
                 await pool.query(
-                    'INSERT INTO rooms (id, content, expires_at) VALUES (?, ?, ?)',
-                    [id, '', expiresAt]
+                    'INSERT INTO rooms (id, content, created_at, expires_at, language) VALUES (?, ?, ?, ?, ?)',
+                    [id, '', now, expiresAt, 'plaintext']
                 );
                 return res.status(200).json({
                     id,
                     content: '',
                     created_at: now,
-                    expires_at: expiresAt
+                    expires_at: expiresAt,
+                    language: 'plaintext',
+                    current_views: 0,
+                    max_views: 0
                 });
             }
 
         } else if (req.method === 'POST') {
             const { content } = req.body;
+            const password = req.headers['x-room-password'];
 
-            // Update room content only if it exists and is not expired
+            // First check if room requires password
+            const [rows] = await pool.query('SELECT password FROM rooms WHERE id = ?', [id]);
+            if (rows.length > 0) {
+                const room = rows[0];
+                if (room.password) {
+                    if (!password) return res.status(401).json({ message: 'Password required' });
+                    const isMatch = await bcrypt.compare(password, room.password);
+                    if (!isMatch) return res.status(403).json({ message: 'Invalid password' });
+                }
+            }
+
+            // Update room content
             const [result] = await pool.query(
-                'UPDATE rooms SET content = ? WHERE id = ? AND expires_at > NOW()',
+                'UPDATE rooms SET content = ? WHERE id = ?',
                 [content, id]
             );
 
             if (result.affectedRows === 0) {
-                // Check if it was because it didn't exist (unlikely if GET called first) or expired
                 return res.status(404).json({ message: 'Room not found or expired' });
             }
 

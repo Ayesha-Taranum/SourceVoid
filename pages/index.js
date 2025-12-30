@@ -8,10 +8,25 @@ export default function Home() {
   const [roomIdInput, setRoomIdInput] = useState('');
   const [loading, setLoading] = useState(false);
 
+  // Creation Options
+  const [password, setPassword] = useState('');
+  const [expirationType, setExpirationType] = useState('hours'); // 'hours', 'minutes', 'views'
+  const [expirationValue, setExpirationValue] = useState('24');
+  const [showOptions, setShowOptions] = useState(false);
+
   const createRoom = async () => {
     setLoading(true);
     try {
-      const res = await fetch('/api/rooms/create', { method: 'POST' });
+      const res = await fetch('/api/rooms/create', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          password,
+          expirationType,
+          expirationValue: parseInt(expirationValue),
+          language: 'javascript' // Default, can change in room
+        })
+      });
       if (res.ok) {
         const { id } = await res.json();
         router.push(`/${id}`);
@@ -61,9 +76,54 @@ export default function Home() {
       </h1>
 
       <div className="actions">
-        <button onClick={createRoom} disabled={loading}>
-          {loading ? 'Creating...' : '> Create New Room'}
-        </button>
+        <div className="creation-panel">
+          {!showOptions ? (
+            <button onClick={() => setShowOptions(true)} className="create-btn">
+              Create New Room
+            </button>
+          ) : (
+            <>
+              <div className="options-row">
+                <select value={expirationType} onChange={(e) => {
+                  setExpirationType(e.target.value);
+                  // Set reasonable defaults
+                  if (e.target.value === 'hours') setExpirationValue('24');
+                  if (e.target.value === 'minutes') setExpirationValue('30');
+                  if (e.target.value === 'views') setExpirationValue('5');
+                }}>
+                  <option value="hours">Expire after (Hours)</option>
+                  <option value="minutes">Expire after (Minutes)</option>
+                  <option value="views">Expire after (Views)</option>
+                </select>
+                <input
+                  type="number"
+                  min="1"
+                  value={expirationValue}
+                  onChange={(e) => setExpirationValue(e.target.value)}
+                  className="small-input"
+                />
+              </div>
+              <input
+                type="password"
+                placeholder="Optional Password"
+                value={password}
+                onChange={(e) => setPassword(e.target.value)}
+                className="password-input"
+              />
+              <button onClick={createRoom} disabled={loading} className="create-btn">
+                {loading ? 'Creating...' : '> Initialize Void'}
+              </button>
+              <button
+                onClick={() => setShowOptions(false)}
+                style={{ background: 'transparent', border: 'none', color: '#666', marginTop: '1rem', cursor: 'pointer', fontSize: '0.9rem' }}
+              >
+                Cancel
+              </button>
+            </>
+          )}
+        </div>
+
+        <div className="divider">OR</div>
 
         <form onSubmit={joinRoom} className="join-form">
           <input
